@@ -46,9 +46,9 @@ export default function TasksLabel() {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  const handleProgressChange = (id : number, value : string) => {
+  const handleProgressChange = (id: number, value: string) => {
     const progress = Math.min(Math.max(parseInt(value) || 0, 0), 100);
-    //@ts-expect-error break the arrow function
+    //@ts-expect-error breaks arrow function
     setTasks(tasks.map(task => 
       task.id === id ? { ...task, progress } : task
     ));
@@ -57,14 +57,15 @@ export default function TasksLabel() {
   const totalProgress = Math.round(tasks.reduce((sum: number, task: { progress: number }) => sum + task.progress, 0) / tasks.length);
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold mb-6 text-center">Controle de Tarefas</h1>
+    <div className="max-w-md mx-auto p-6 bg-gray-100 rounded-lg shadow-lg">
+      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Controle de Tarefas</h1>
       <ul className="space-y-4">
-        {//@ts-expect-error break the arrow function
+        {
+        //@ts-expect-error breaks arrow function
         tasks.map(task => (
           <li key={task.id} className="flex flex-col space-y-2">
             <div className="flex justify-between items-center">
-              <Label htmlFor={`task-${task.id}`} className="flex-grow">{task.name}</Label>
+              <Label htmlFor={`task-${task.id}`} className="flex-grow text-gray-700">{task.name}</Label>
               <Input
                 id={`task-${task.id}`}
                 type="number"
@@ -72,17 +73,17 @@ export default function TasksLabel() {
                 max="100"
                 value={task.progress}
                 onChange={(e) => handleProgressChange(task.id, e.target.value)}
-                className="w-16 text-right"
+                className="w-16 text-right bg-gray-200 text-gray-800"
               />
             </div>
-            <Progress value={task.progress} className="h-2" />
+            <Progress value={task.progress} className="h-2 bg-gray-300" />
           </li>
         ))}
       </ul>
       <div className="mt-8">
-        <h2 className="text-lg font-semibold mb-2">Total Progress</h2>
-        <Progress value={totalProgress} className="h-3" />
-        <p className="text-center mt-2 text-sm text-gray-600">{totalProgress}% Complete</p>
+        <h2 className="text-lg font-semibold mb-2 text-gray-800">Progresso Total</h2>
+        <Progress value={totalProgress} className="h-3 bg-gray-300" />
+        <p className="text-center mt-2 text-sm text-gray-600">{totalProgress}% Completo</p>
       </div>
     </div>
   );
