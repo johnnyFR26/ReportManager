@@ -65,7 +65,7 @@ export default function TasksLabel() {
         tasks.map(task => (
           <li key={task.id} className="flex flex-col space-y-2">
             <div className="flex justify-between items-center">
-              <Label htmlFor={`task-${task.id}`} className="flex-grow text-gray-700">{task.name}</Label>
+              <Label htmlFor={`task-${task.id}`} className="flex-grow text-gray-700">{`${task.id}. ${task.name}`}</Label>
               <Input
                 id={`task-${task.id}`}
                 type="number"
