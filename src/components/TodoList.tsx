@@ -49,6 +49,11 @@ export default function TodoList() {
     setDeadline('');
   };
 
+  const completeTask = (id: number) => {
+    const updatedTasks = tasks.filter(task => task.id !== id);
+    setTasks(updatedTasks);
+  };
+
   const formatDateTime = (dateTime: string): string => {
     const date = new Date(dateTime);
     return date.toLocaleString("pt-BR", {
@@ -110,10 +115,18 @@ export default function TodoList() {
           ) : (
             <ul className="space-y-4">
               {tasks.map((task) => (
-                <li key={task.id} className="border-b pb-2">
-                  <p><strong>Cliente:</strong> {task.clientNumber}</p>
-                  <p><strong>Motivo:</strong> {task.description}</p>
-                  <p><strong>Horario:</strong> {formatDateTime(task.deadline)}</p>
+                <li key={task.id} className="border-b pb-2 flex justify-between items-center">
+                  <div>
+                    <p><strong>Cliente:</strong> {task.clientNumber}</p>
+                    <p><strong>Motivo:</strong> {task.description}</p>
+                    <p><strong>Horario:</strong> {formatDateTime(task.deadline)}</p>
+                  </div>
+                  <Button
+                    onClick={() => completeTask(task.id)}
+                    variant="destructive"
+                  >
+                    Concluir
+                  </Button>
                 </li>
               ))}
             </ul>
