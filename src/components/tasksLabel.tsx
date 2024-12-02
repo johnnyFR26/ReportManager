@@ -1,39 +1,11 @@
 import { useState, useEffect } from "react";
-import { Progress } from "./ui/progress";
+import { Progress } from "./ui/progress"; // Pode renomear este import para evitar confusão
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
 const initialTasks = [
-  { id: 1, name: "Instalação/atualização do desktop", progress: 0 },
-  { id: 2, name: "Não envia mensagem de saudação", progress: 0 },
-  { id: 3, name: "Não envia mensagem de cashback", progress: 0 },
-  { id: 4, name: "Não envia mensagem de status", progress: 0 },
-  { id: 5, name: "Robô não carrega (não gerou QRCODE)", progress: 0 },
-  { id: 6, name: "Robô leu o QRCODE mas não carrega", progress: 0 },
-  { id: 7, name: "Configurar e/ou instalar impressora", progress: 0 },
-  { id: 8, name: "Encaminhar acesso", progress: 0 },
-  { id: 9, name: "Tenta reproduzir bug", progress: 0 },
-  { id: 10, name: "Contratar novo painel", progress: 0 },
-  { id: 11, name: "Renovação painel", progress: 0 },
-  { id: 12, name: "Reativação de painel", progress: 0 },
-  { id: 13, name: "Venda de cardápio", progress: 0 },
-  { id: 14, name: "Preenchimento / ajuda com o menu 'meu perfil'", progress: 0 },
-  { id: 15, name: "Montagem de cardápio ou ajuda cardápio", progress: 0 },
-  { id: 16, name: "Configurar impressora do celular/computador", progress: 0 },
-  { id: 17, name: "Configurar mensagem automática no celular", progress: 0 },
-  { id: 18, name: "Preenchimento / ajuda formas de pagamento (Online/manual)", progress: 0 },
-  { id: 19, name: "Gerar QRCODE para o cliente", progress: 0 },
-  { id: 20, name: "Questão NFC-e", progress: 0 },
-  { id: 21, name: "Sugestão", progress: 0 },
-  { id: 22, name: "Cliente informa que os itens não estão aparecendo (disponibilidade)", progress: 0 },
-  { id: 23, name: "Redefinir senha de acesso / financeira", progress: 0 },
-  { id: 24, name: "Configurações de mesas / encomendas/pdv", progress: 0 },
-  { id: 25, name: "Pedido teste / PDV (Passo 5)", progress: 0 },
-  { id: 26, name: "Abertura de card", progress: 0 },
-  { id: 27, name: "Cancelamento", progress: 0 },
-  { id: 28, name: "Gerar boleto ou enviar pix para pagamento", progress: 0 },
-  { id: 29, name: "Confirmação de pagamento (cliente enviou comprovante)", progress: 0 },
-  { id: 30, name: "Liberação de painel (arquivo não encontrado)", progress: 0 }
+  { id: "uuid-1", name: "Instalação/atualização do desktop", quantity: 0 },
+  // ... restante das tasks
 ];
 
 export default function TasksLabel() {
@@ -42,48 +14,101 @@ export default function TasksLabel() {
     return savedTasks ? JSON.parse(savedTasks) : initialTasks;
   });
 
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const userId = JSON.parse(localStorage.getItem("selectedUser"));
+        console.log(userId)
+        const response = await fetch(`https://api-tasks-wm.vercel.app/tasks/getByUserId/${userId}`);
+        if (!response.ok) throw new Error("Erro ao buscar dados");
+        const data = await response.json();
+        setTasks(data);
+      } catch (error) {
+        console.error("Erro ao buscar tarefas:", error);
+      }
+    };
+
+    fetchTasks();
+  }, []); // Executa apenas na montagem do componente
+
+  // Sync tasks with localStorage
   useEffect(() => {
     localStorage.setItem("tasks", JSON.stringify(tasks));
   }, [tasks]);
 
-  const handleProgressChange = (id: number, value: string) => {
-    const progress = Math.min(Math.max(parseInt(value) || 0, 0), 100);
-    //@ts-expect-error breaks arrow function
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, progress } : task
-    ));
+  // Atualiza a quantidade
+  const handleQuantityChange = (id: string, value: string) => {
+    const quantity = Math.max(parseInt(value) || 0, 0); // Garante que seja sempre >= 0
+    try{
+      fetch(`https://api-tasks-wm.vercel.app/tasks/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ quantity }),
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erro ao atualizar quantidade');
+        }
+      })
+      .catch(error => {
+        console.error('Erro ao atualizar quantidade:', error);
+      });
+    }catch(error){
+      console.error('Erro ao atualizar quantidade:', error);
+    }
+    //@ts-expect-error testes
+    setTasks((prevTasks) =>
+      //@ts-expect-error testes
+      prevTasks.map((task) =>
+        task.id === id ? { ...task, quantity } : task
+      )
+    );
   };
-
-  const totalProgress = Math.round(tasks.reduce((sum: number, task: { progress: number }) => sum + task.progress, 0) / tasks.length);
+//@ts-expect-error testes
+  const totalQuantity = tasks.reduce((sum, task) => sum + task.quantity, 0);
 
   return (
     <div className="max-w-md mx-auto p-6 bg-gray-100 rounded-lg shadow-lg">
-      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Controle de Tarefas</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">
+        Controle de Tarefas
+      </h1>
       <ul className="space-y-4">
-        {
-        //@ts-expect-error breaks arrow function
-        tasks.map(task => (
+        {//@ts-expect-error testes
+        tasks.map((task, index) => (
           <li key={task.id} className="flex flex-col space-y-2">
             <div className="flex justify-between items-center">
-              <Label htmlFor={`task-${task.id}`} className="flex-grow text-gray-700">{`${task.id}. ${task.name}`}</Label>
+              <Label
+                htmlFor={`task-${task.id}`}
+                className="flex-grow text-gray-700"
+              >
+                {`${index + 1}. ${task.name}`}
+              </Label>
               <Input
                 id={`task-${task.id}`}
                 type="number"
                 min="0"
-                max="100"
-                value={task.progress}
-                onChange={(e) => handleProgressChange(task.id, e.target.value)}
+                value={task.quantity}
+                onChange={(e) =>
+                  handleQuantityChange(task.id, e.target.value)
+                }
                 className="w-16 text-right bg-gray-200 text-gray-800"
               />
             </div>
-            <Progress value={task.progress} className="h-2 bg-gray-300" />
+            <Progress value={task.quantity} className="h-2 bg-gray-300" />
           </li>
         ))}
       </ul>
       <div className="mt-8">
-        <h2 className="text-lg font-semibold mb-2 text-gray-800">Progresso Total</h2>
-        <Progress value={totalProgress} className="h-3 bg-gray-300" />
-        <p className="text-center mt-2 text-sm text-gray-600">{totalProgress}% Completo</p>
+        <h2 className="text-lg font-semibold mb-2 text-gray-800">
+          Quantidade Total
+        </h2>
+        <Progress value={totalQuantity} className="h-3 bg-gray-300" />
+        <p className="text-center mt-2 text-sm text-gray-600">
+          {totalQuantity} Total
+        </p>
       </div>
     </div>
   );
