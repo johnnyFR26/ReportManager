@@ -18,6 +18,7 @@ export default function TasksLabel() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
+        //@ts-expect-error testes
         const userId = JSON.parse(localStorage.getItem("selectedUser"));
         console.log(userId)
         const response = await fetch(`https://api-tasks-wm.vercel.app/tasks/getByUserId/${userId}`);
